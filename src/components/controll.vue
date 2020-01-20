@@ -65,13 +65,10 @@ export default {
         noActive (num) {
             for (var i=0; i<this.active.length; i++) {
                 if (this.active[i]==num) {
-                    console.log("удалил актив "+num)
                    this.active.splice(i,1);
                    break;
                 }
             }
-            console.log("актив:")
-            console.log(this.active)
         },
 
         clearActive() {

@@ -26,7 +26,11 @@ export default {
 
     }
   },
- 
+  mounted() {
+      setInterval(() => {
+        this.$store.dispatch('setTargetForLift');
+      }, 1000);
+  },
   computed: mapGetters(['floorCount', 'elevator']),
 }
 </script>

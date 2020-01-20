@@ -66,6 +66,7 @@ export default {
                  to+=velocity;
              }
              if (dist<60) {
+                 this.state=2;
                  to=this.lerp(this.position,toPosition,0.015)
                  if ((this.direction==1 && toPosition - to<0.01) || (this.direction==0 && to<0.01)) to=toPosition;
              }
@@ -74,7 +75,6 @@ export default {
              this.floor=this.position/this.step+1;
              if ((this.position>=toPosition && this.direction==1) || (Math.floor (this.position)<=toPosition && this.direction==0)) {
                  clearInterval(interval);
-                 this.delTarget(target);
                  setTimeout(() => {
                      this.DoorOpen();
                  }, 1000);
@@ -119,9 +119,35 @@ export default {
         },
 
         GetFloorTarget () {
-            if (this.direction==1) this.to=this.to.sort();
+            if (this.direction==1) {
+                this.to=this.to.sort();
+                if (this.onPath==0 && this.people==0) {
+                   var p = this.$store.getters.pressed;
+                   if (p.length>0) {
+                       var n = p[0].floor.maxFloor(1);
+                       for (var i=0; i<p.length; i++) {
+                           if (p[i].floor.num==n && p[i].dir==0 && p[i].lift==null) {
+
+                           }
+                       }
+                       return n;
+                   }
+                }
+            }
             else if (this.direction==0) {
                 this.to=this.to.sort(function(a,b){return b-a});
+                if (this.onPath==1 && this.people==0) {
+                   var p = this.$store.getters.pressed;
+                   if (p.length>0) {
+                       var n = p[0].floor.maxFloor(1);
+                       for (var i=0; i<p.length; i++) {
+                           if (p[i].floor.num==n && p[i].dir==1 && p[i].lift==null) {
+
+                           }
+                       }
+                       return n;
+                   }
+                }
             }  
             for (var i=0; i<this.to.length; i++) {
                 if (this.direction==1 && this.to[i]>=this.floor) {
@@ -136,16 +162,22 @@ export default {
 
         ChangeDirection() {
             console.log("меняю direction")
-            if (this.direction==1) this.direction=0
-            else if (this.direction==0) this.direction=1
+            if (this.direction==1) {
+                this.direction=0
+                this.onPath=0
+            }
+            else if (this.direction==0) {
+                this.direction=1
+                this.onPath=1
+            }
         },
 
         DoorOpen () {
-            this.state=2;
             this.isOpen=true;
             var inPeople = false;
             console.log("direction при остановке " +this.direction)
             inPeople = this.clearPressed();
+            this.delTarget(Math.floor(this.floor));
             setTimeout(() => {
                 this.opacity=0;
                 setTimeout(() => {
@@ -181,19 +213,19 @@ export default {
             var inPeople=false;
             for (var i=0; i<this.$store.getters.pressed.length; i++) {
                 if (this.$store.getters.pressed[i].floor.num==Math.floor (this.floor)) {
-                    if (this.$store.getters.pressed[i].floor.up && (this.direction==1 || (this.direction==0 && (this.people==0 || this.getStops(1,0)==0) ))) {
+                    if (this.$store.getters.pressed[i].dir==1 && (this.direction==1  && this.onPath==1 || (this.direction==0 && (this.people==0 || this.getStops(1,0)==0) ))) {
                         console.log("удаляю этаж")
                         this.$store.getters.pressed[i].floor.up=false;
                         this.$store.getters.pressed.splice(i,1);
-                       // if (this.direction==null) this.direction=1
+                        this.direction=1
                         inPeople=true;
                         break;
                     }
-                    else if (this.$store.getters.pressed[i].floor.down && (this.direction==0 || (this.direction==1 && (this.people==0 || this.getStops(this.$store.getters.floorCount,1)==0) ))) {
+                    else if (this.$store.getters.pressed[i].dir==0 && (this.direction==0 && this.onPath==0 || (this.direction==1 && this.onPath==0 && (this.people==0 || this.getStops(this.$store.getters.floorCount,1)==0) ))) {
                         console.log("direction " +this.direction)
                         this.$store.getters.pressed[i].floor.down=false;
                         this.$store.getters.pressed.splice(i,1);
-                       // if (this.direction==null) this.direction=0
+                        this.direction=0
                         inPeople=true;
                         break;
                     }
@@ -222,6 +254,7 @@ export default {
         clearTargets() {
             this.to.splice(0,this.to.length);
             this.controller.clearActive();
+            this.onPath=null;
         },
 
         CloseDoor () {
