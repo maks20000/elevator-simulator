@@ -39,15 +39,20 @@ export default {
                 if (!this.lift.checkTarget(floor))
                     this.lift.to.push(floor);
                 if (this.lift.state==4) {
-                    if (floor>Math.floor(this.lift.floor)) this.lift.direction=1;
-                    else if (floor<Math.floor(this.lift.floor)) this.lift.direction=0;
+                    if (floor>Math.floor(this.lift.floor)) {
+                        this.lift.direction=1;
+                        this.lift.onPath=1;
+                    }
+                    else if (floor<Math.floor(this.lift.floor)) {
+                        this.lift.direction=0;
+                        this.lift.onPath=0;
+                    }
                     if (floor==Math.floor(this.lift.floor)) {
                         this.lift.delTarget(floor);
                         this.lift.DoorOpen();
                     }
                     else this.lift.Move();
                 }
-              this.$store.dispatch('setTargetForLift'); 
             } else this.noActive(floor);
             console.log(this.lift)
         },

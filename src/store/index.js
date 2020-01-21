@@ -10,88 +10,38 @@ export default new Vuex.Store ({
         elevatorCount:1,
         tonnageNum:800,
         pressed: [],
-        elevator: []
+        elevator: [],
+        mainLogicObject:null,
     },
 
     actions: {
         setTargetForLift (context) {
-            var pressed = context.getters.pressed;
-            for (var i=0; i<pressed.length; i++) {
-                    console.log("Проверка "+pressed[i].floor.num+" этаж")
-                    var selected=null;
-                    var num = pressed[i].floor.num;
-                    if (pressed[i].lift!=null) {
-                        if (pressed[i].lift.state==1 && pressed[i].lift.to[0]==num) continue;
-                        if ((pressed[i].lift.state==4 || pressed[i].lift.state==3 || pressed[i].lift.state==1) && 
-                            pressed[i].lift.checkTarget(num) && !pressed[i].lift.controller.checkActive(num)) {
-                            pressed[i].lift.delTarget(num)
-                            if (pressed[i].lift.people>0 && pressed[i].lift.to.length==0) {
-                                pressed[i].lift.state=4
-                            }
-                        }
-                    }
-                    var elevator=new Array();
-                    for (var j=0; j<context.getters.elevator.length; j++) {
-                        var lift=context.getters.elevator[j];
-                        if (context.getters.weight-lift.weightSum<120) continue;
-                        if (pressed[i].dir==1) {
-                            if ((lift.state==0 && lift.onPath==null) || lift.onPath==1) {
-                                    elevator.push(lift);    
-                                }
-                        }
-                        else if (pressed[i].dir==0) {
-                            if (lift.state!=2 && (lift.state==0 && lift.onPath==null) || lift.onPath==0) {
-                                    elevator.push(lift);    
-                                }
-                        }
-                    }
-                    
-                    if (elevator.length>0) {
-                        console.log(elevator);
-                        var lift = elevator[0];
-                        var dists = new Array();
-                        for (var j=0; j<elevator.length; j++) {
-                            var d = (Math.abs(num-elevator[j].floor));
-                            if (elevator[j].state==1) d-=1;
-                            dists.push(d);
-                        }
-                        if (selected==null) {
-                            selected = elevator[0];
-                            var dist = dists[0];
-                            for (var j=1; j<dists.length; j++) {
-                                if (dist>dists[j]) {
-                                    selected=elevator[j];
-                                    dist=dists[j];
-                                }
-                            }
-                        }
-                        if (pressed[i].lift!=null) {
-                            if (selected!=pressed[i].lift) {
-                                if (!pressed[i].lift.controller.checkActive(num)) {
-                                    pressed[i].lift.delTarget(num)
-                                }
-                                pressed[i].lift=selected;
-                            }
-                        } else pressed[i].lift=selected;
+           // context.getters.mainLogic.setTargetForLift();
+        },
 
-                        
-
-                        if (!selected.checkTarget(num) && selected.state!=4) {
-                            
-                            selected.to.push(num)
-                        }
-
-                        if (selected.state==0) {
-                            selected.onPath=pressed[i].dir;
-                            if (selected.floor<num) selected.direction=1
-                            else selected.direction=0
-                            selected.Move();
-                        }
-                        else if (selected.state==4 && Math.floor(selected.floor)==num && selected.onPath==pressed[i].dir) {
-                            selected.DoorOpen()
-                        }
+        changeTarget (context, {elevators, target}) {
+            var lift = context.getters.getElevatorMinDist(elevators,target.floor.num)
+            if (target.lift!=null && target.lift!=lift) {
+                if (target.lift.to[0]!=num && target.lift.state!=2) {
+                    if (!target.lift.controller.checkActive(num)) {
+                        target.lift.delTarget(num)
                     }
-                
+                } else lift=target.lift
+            }
+            target.lift=lift;
+            context.dispatch("setTarget",{elevator: target.lift, target:target});
+        },
+
+        setTarget (context, {elevator, target}) {
+            if (elevator!=null) {
+                elevator.onPath=target.dir;
+                if (!elevator.checkTarget(target.floor.num) && elevator.floor!=target.floor.num) {
+                    elevator.to.push(target.floor.num)
+                    if (elevator.state==0) elevator.Move();
+                }
+                else if (elevator.floor==target.floor.num && elevator.state!=1 && elevator.state!=2) {
+                    elevator.DoorOpen()
+                }
             }
         }
     },
@@ -114,10 +64,14 @@ export default new Vuex.Store ({
         },
         step(state,step) {
             state.step=step;
-        }
+        },
     },
 
     getters: {
+
+        mainLogic (state) {
+            return state.mainLogicObject;
+        },
         step (state) {
             return state.step;
         },
@@ -136,5 +90,97 @@ export default new Vuex.Store ({
         elevator (state) {
             return state.elevator;
         },
+
+        getFloorDir: (state) => (dir) => {
+            return(state.pressed.filter((item)=>{
+                return item.dir==dir;
+            }))
+        },
+
+        getMaxFloor: (state) => (floors) => {
+            var result=null
+            if (floors.length) {
+                result=floors[0];
+                for (var i=1; i<floors.length; i++) {
+                    if (result.floor.num<floors[i].floor.num) {
+                        result=floors[i];
+                    }
+                }
+            }
+            return result;
+        },
+
+        getMinFloor: (state) => (floors) => {
+            var result=null
+            if (floors.length) {
+                result=floors[0];
+                for (var i=1; i<floors.length; i++) {
+                    if (result.floor.num>floors[i].floor.num) {
+                        result=floors[i];
+                    }
+                }
+            }
+            return result;
+        },
+
+        getElevatorMinDist: (state) => (elevators,floor) => {
+            var result=elevators[0];
+            var dist=Math.abs(floor-result.floor)
+            for (var i=0; i<elevators.length; i++) {
+                var d = Math.abs(floor-elevators[i].floor)
+                if ((elevators[i].to[0]==floor && elevators[i].state==1) || elevators[i].state==2) d-=2;
+                if (d < dist) {
+                    result=elevators[i];
+                    dist=d;
+                }
+            }
+            return result
+        },
+
+        getElevatorsTop: (state) => (floor) => {
+            var result = new Array();
+            state.elevator.forEach((lift)=>{
+                if (lift.floor>=floor) result.push(lift);
+            })
+            return result
+        },
+
+        getElevatorsBottom: (state) => (floor) => {
+            var result = new Array();
+            state.elevator.forEach((lift)=>{
+                if (lift.floor<=floor) result.push(lift);
+            })
+            return result
+        },
+
+        getElevatorsWeight: (state) => (elevators) =>{
+            return (elevators.filter((lift)=> {
+                return state.tonnageNum - lift.weightSum >= 120 
+            }))
+        },
+
+        getElevatorsTargetPath: (state) => (elevators,dir) =>{
+            return (elevators.filter((lift)=> {
+                return lift.onPath==dir
+            }))
+        },
+
+        getElevatorsDirection: (state) => (elevators,dir) =>{
+            return (elevators.filter((lift)=> {
+                return lift.direction==dir
+            }))
+        },
+
+        getElevatorsMove: (state) => (elevators) => {
+            return (elevators.filter((lift)=> {
+                return lift.state==1
+            }))
+        },
+
+        getElevatorsWithState: (state) => (s) => {
+            return (state.elevator.filter((lift)=> {
+                return lift.state==s
+            }))
+        }
     }
 })

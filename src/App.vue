@@ -8,6 +8,7 @@
     <div class="controll-block">
       <controll v-for="(lift,index) in elevator" :key="index" :lift="lift"></controll>
     </div>
+    <main-logic></main-logic>
   </div>
 </template>
 
@@ -16,10 +17,11 @@
 import configPanel from './components/configPanel'
 import floor from './components/floor'
 import controll from './components/controll'
+import mainLogic from './components/mainLogic'
 import {mapGetters} from 'vuex'
 export default {
   components: {
-    configPanel, floor, controll
+    configPanel, floor, controll, mainLogic
   },
   data () {
     return {
@@ -27,9 +29,7 @@ export default {
     }
   },
   mounted() {
-      setInterval(() => {
-        this.$store.dispatch('setTargetForLift');
-      }, 1000);
+      
   },
   computed: mapGetters(['floorCount', 'elevator']),
 }

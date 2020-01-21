@@ -10,6 +10,8 @@
 </template>
 
 <script>
+
+import {mapGetters} from 'vuex'
 export default {
     props: {
         id:null,
@@ -31,6 +33,7 @@ export default {
             controller:null,
         }
     },
+    computed: mapGetters(['pressed']),
     methods: {
 
         setImage () {
@@ -48,6 +51,7 @@ export default {
             speed*=-1;
           }  
           var interval = setInterval(() => { 
+              console.log(this.state)
              this.step=this.$store.getters.step.offsetHeight; 
              var target = this.GetFloorTarget ();
              if (!target) {
@@ -121,33 +125,9 @@ export default {
         GetFloorTarget () {
             if (this.direction==1) {
                 this.to=this.to.sort();
-                if (this.onPath==0 && this.people==0) {
-                   var p = this.$store.getters.pressed;
-                   if (p.length>0) {
-                       var n = p[0].floor.maxFloor(1);
-                       for (var i=0; i<p.length; i++) {
-                           if (p[i].floor.num==n && p[i].dir==0 && p[i].lift==null) {
-
-                           }
-                       }
-                       return n;
-                   }
-                }
             }
             else if (this.direction==0) {
                 this.to=this.to.sort(function(a,b){return b-a});
-                if (this.onPath==1 && this.people==0) {
-                   var p = this.$store.getters.pressed;
-                   if (p.length>0) {
-                       var n = p[0].floor.maxFloor(1);
-                       for (var i=0; i<p.length; i++) {
-                           if (p[i].floor.num==n && p[i].dir==1 && p[i].lift==null) {
-
-                           }
-                       }
-                       return n;
-                   }
-                }
             }  
             for (var i=0; i<this.to.length; i++) {
                 if (this.direction==1 && this.to[i]>=this.floor) {
@@ -161,21 +141,18 @@ export default {
         },
 
         ChangeDirection() {
-            console.log("меняю direction")
             if (this.direction==1) {
                 this.direction=0
-                this.onPath=0
             }
             else if (this.direction==0) {
                 this.direction=1
-                this.onPath=1
             }
         },
 
         DoorOpen () {
             this.isOpen=true;
+            this.state=3;
             var inPeople = false;
-            console.log("direction при остановке " +this.direction)
             inPeople = this.clearPressed();
             this.delTarget(Math.floor(this.floor));
             setTimeout(() => {
@@ -195,7 +172,6 @@ export default {
                     if (inPeople) {
                         var people = this.Random(1,5);
                         this.In(people);
-                        this.state=3;
                     }
                     if (this.people>0)
                         setTimeout(()=>{
@@ -211,20 +187,20 @@ export default {
 
         clearPressed () {
             var inPeople=false;
-            for (var i=0; i<this.$store.getters.pressed.length; i++) {
-                if (this.$store.getters.pressed[i].floor.num==Math.floor (this.floor)) {
-                    if (this.$store.getters.pressed[i].dir==1 && (this.direction==1  && this.onPath==1 || (this.direction==0 && (this.people==0 || this.getStops(1,0)==0) ))) {
+            for (var i=0; i<this.pressed.length; i++) {
+                if (this.pressed[i].floor.num==Math.floor (this.floor)) {
+                    if (this.pressed[i].dir==1 && this.onPath==1) {
                         console.log("удаляю этаж")
-                        this.$store.getters.pressed[i].floor.up=false;
-                        this.$store.getters.pressed.splice(i,1);
+                        this.pressed[i].floor.up=false;
+                        this.pressed.splice(i,1);
                         this.direction=1
                         inPeople=true;
                         break;
                     }
-                    else if (this.$store.getters.pressed[i].dir==0 && (this.direction==0 && this.onPath==0 || (this.direction==1 && this.onPath==0 && (this.people==0 || this.getStops(this.$store.getters.floorCount,1)==0) ))) {
+                    else if (this.pressed[i].dir==0 && (this.direction==0 && this.onPath==0 || (this.direction==1 && this.onPath==0 && (this.people==0 || this.getStops(this.$store.getters.floorCount,1)==0) ))) {
                         console.log("direction " +this.direction)
-                        this.$store.getters.pressed[i].floor.down=false;
-                        this.$store.getters.pressed.splice(i,1);
+                        this.pressed[i].floor.down=false;
+                        this.pressed.splice(i,1);
                         this.direction=0
                         inPeople=true;
                         break;
@@ -263,7 +239,6 @@ export default {
                     this.state=0;
                     this.clearTargets();
                     console.log("лифт с id: "+this.id+" в спокойном режиме")
-                    this.$store.dispatch('setTargetForLift');
                 }
                 else if  (this.to.length==0 || this.controller.active.length==0) {
                     this.state=4;
@@ -281,9 +256,6 @@ export default {
                         console.log(this.to.length+" "+this.to)
                         this.Move();
                     }, 1200);
-                } else {
-                  //  this.clearPressed();
-                     
                 }
             }, 1000);
         },
