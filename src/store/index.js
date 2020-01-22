@@ -65,6 +65,10 @@ export default new Vuex.Store ({
         step(state,step) {
             state.step=step;
         },
+
+        mainLogic(state,mainLogic) {
+            state.mainLogicObject=mainLogic;
+        },
     },
 
     getters: {
@@ -91,10 +95,31 @@ export default new Vuex.Store ({
             return state.elevator;
         },
 
+        getPressedAtNum: (state,getters) => (num, dir) => {
+            var onDir = getters.getFloorDir(dir);
+            return(onDir.filter((item)=>{
+                return item.floor.num==num;
+            }))[0];
+        },
+
         getFloorDir: (state) => (dir) => {
             return(state.pressed.filter((item)=>{
                 return item.dir==dir;
             }))
+        },
+
+        getNumFloor: () => (floor) => {
+            var result=new Array();
+            floor.forEach((item)=> {
+                result.push(item.floor.num);
+            })
+            return result;
+        },
+
+
+        getMinFloorAtDir: (state,getters) => (dir,floors) => {
+            if (dir==0) return getters.getMaxFloor(floors)
+            else return  getters.getMinFloor(floors)
         },
 
         getMaxFloor: (state) => (floors) => {
@@ -140,15 +165,20 @@ export default new Vuex.Store ({
         getElevatorsTop: (state) => (floor) => {
             var result = new Array();
             state.elevator.forEach((lift)=>{
-                if (lift.floor>=floor) result.push(lift);
+                if ((state.tonnageNum - lift.weightSum >= 120 && lift.floor>=floor.floor.num) && (lift.onPath==null || lift.onPath==floor.dir)) result.push(lift);
             })
             return result
         },
 
-        getElevatorsBottom: (state) => (floor) => {
+        getElevatorsAtDir: (state, getters) => (dir, floor) => {
+            if (dir==0) return getters.getElevatorsBottom(floor)
+            else return getters.getElevatorsTop(floor)
+        },
+
+        getElevatorsBottom: (state,getters) => (floor) => {
             var result = new Array();
             state.elevator.forEach((lift)=>{
-                if (lift.floor<=floor) result.push(lift);
+                if ((state.tonnageNum - lift.weightSum >= 120 && lift.floor<=floor.floor.num) && (lift.onPath==null || lift.onPath==floor.dir)) result.push(lift);
             })
             return result
         },
@@ -174,6 +204,12 @@ export default new Vuex.Store ({
         getElevatorsMove: (state) => (elevators) => {
             return (elevators.filter((lift)=> {
                 return lift.state==1
+            }))
+        },
+
+        getElevatorsNoPeople: (state) => (elevators) => {
+            return (elevators.filter((lift)=> {
+                return lift.people==0
             }))
         },
 

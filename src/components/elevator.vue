@@ -5,7 +5,7 @@
         <div :class="{tr:isOpen}" class="door door-right"></div>  
         <div :style="{opacity: opacity}" class="people"><img :src="'/src/assets/svg/lift_person_0'+setImage()+'.svg'" alt=""></div>
       </div>
-      <button @click="Move">start</button>
+      <span class="num">- {{id}} -</span>
   </div>
 </template>
 
@@ -33,7 +33,7 @@ export default {
             controller:null,
         }
     },
-    computed: mapGetters(['pressed']),
+    computed: mapGetters(['pressed','mainLogic']),
     methods: {
 
         setImage () {
@@ -51,7 +51,6 @@ export default {
             speed*=-1;
           }  
           var interval = setInterval(() => { 
-              console.log(this.state)
              this.step=this.$store.getters.step.offsetHeight; 
              var target = this.GetFloorTarget ();
              if (!target) {
@@ -64,7 +63,6 @@ export default {
              var toPosition = this.step*(target-1);
              var dist = Math.abs (toPosition - this.position);
 
-             //console.log(this.floor);
              if (dist>50) {
                 if ((this.direction==1 && velocity < speed) || (this.direction==0 && velocity > speed)) velocity+=step
                  to+=velocity;
@@ -153,8 +151,8 @@ export default {
             this.isOpen=true;
             this.state=3;
             var inPeople = false;
-            inPeople = this.clearPressed();
             this.delTarget(Math.floor(this.floor));
+            inPeople = this.clearPressed();
             setTimeout(() => {
                 this.opacity=0;
                 setTimeout(() => {
@@ -177,8 +175,11 @@ export default {
                         setTimeout(()=>{
                             this.opacity=1;
                         },500)
-                    
+                    if (this.people==0) {
+                        this.clearPressed();
+                    }
                     if (this.weightSum>this.$store.getters.weight) {
+                        this.mainLogic.setTargetForLift();
                         this.Unload();
                     } else this.CloseDoor();
                 }, 1000);              
@@ -190,15 +191,13 @@ export default {
             for (var i=0; i<this.pressed.length; i++) {
                 if (this.pressed[i].floor.num==Math.floor (this.floor)) {
                     if (this.pressed[i].dir==1 && this.onPath==1) {
-                        console.log("удаляю этаж")
                         this.pressed[i].floor.up=false;
                         this.pressed.splice(i,1);
                         this.direction=1
                         inPeople=true;
                         break;
                     }
-                    else if (this.pressed[i].dir==0 && (this.direction==0 && this.onPath==0 || (this.direction==1 && this.onPath==0 && (this.people==0 || this.getStops(this.$store.getters.floorCount,1)==0) ))) {
-                        console.log("direction " +this.direction)
+                    else if ((this.pressed[i].dir==0 && this.onPath==0) || (this.to.length==0 && (this.pressed[i].lift==null || this.pressed[i].lift==this))) {
                         this.pressed[i].floor.down=false;
                         this.pressed.splice(i,1);
                         this.direction=0
@@ -212,7 +211,6 @@ export default {
 
         Unload () {
             var intervalId = setInterval(() => {
-                console.log("выгрузка")
                 if (this.weightSum>this.$store.getters.weight) {
                     this.opacity=0;
                     setTimeout(() => {
@@ -238,7 +236,9 @@ export default {
                 if (this.people==0) {
                     this.state=0;
                     this.clearTargets();
-                    console.log("лифт с id: "+this.id+" в спокойном режиме")
+                    setTimeout(() => {
+                        this.mainLogic.setTargetForLift();
+                    }, 2000);
                 }
                 else if  (this.to.length==0 || this.controller.active.length==0) {
                     this.state=4;
@@ -252,8 +252,6 @@ export default {
 
                 if (this.to.length>0 && this.state!=0 && this.controller.active.length>0) {
                     setTimeout(() => {
-                        console.log("инициализирую Move")
-                        console.log(this.to.length+" "+this.to)
                         this.Move();
                     }, 1200);
                 }
@@ -329,6 +327,14 @@ export default {
                 border-left: 1px solid #638CC2
             .tr 
                 width: 5px
+        .num 
+            text-align: center
+            display: block
+            width: 100%
+            font-size: 18px
+            color: #3166AC
+            position: absolute
+            top: -26px
 
 </style>
 

@@ -2,21 +2,26 @@
   <div class="panel">
         <div class="item">
           <label for="floor">Количество этажей</label>
-          <select id="floor" :value="floors"  v-model="floors" >
-              <option v-for="i in maxFloor-minFloor+1" :value="i+minFloor-1" :key="i">{{i+minFloor-1}}</option>
-          </select>
+          <div class="select">
+            <select id="floor" :value="floors"  v-model="floors" >
+                <option v-for="i in maxFloor-minFloor+1" :value="i+minFloor-1" :key="i">{{i+minFloor-1}}</option>
+            </select>
+          </div>
         </div>
         <div class="item">
           <label for="elevator">Лифтов</label>
-          <select id="elevator" :value="elevators" v-model="elevators">
-              <option v-for="i in maxElevators" :value="i" :key="i">{{i}}</option>
-          </select>
+          <div class="select">
+            <select id="elevator" :value="elevators" v-model="elevators">
+                <option v-for="i in maxElevators" :value="i" :key="i">{{i}}</option>
+            </select>
+          </div>
         </div>
         <div class="item">
           <label for="tonnage">Грузоподъемность лифтов</label>
-          <select id="tonnage" :value="tonn" v-model="tonn">
-              <option v-for="(item, index) in tonnage" :value="item" :key="index">{{item}}</option>
-          </select> кг
+          <div class="select">
+            <select id="tonnage" :value="tonn" v-model="tonn">
+                <option v-for="(item, index) in tonnage" :value="item" :key="index">{{item}}</option>
+            </select></div> кг
         </div>
         <div class="item">
             <button @click="SetParams">Поехали!</button>
@@ -81,6 +86,28 @@ export default {
         border: 1px solid #638CC2
         box-sizing: border-box
         margin-left: 8px
+        padding-left: 8px
+        color: #0E3058
+        -webkit-appearance: none
+        -moz-appearance: none
+        appearance: none
+    .select
+        position: relative
+        display: inline-block
+        &:before 
+            content: ""
+            padding: 0 8px
+            position: absolute
+            right: 8px
+            top: 12px
+            z-index: 1
+            text-align: center
+            width: 15px
+            height: 15px
+            pointer-events: none
+            box-sizing: border-box
+            background: url('../assets/svg/select-g.svg') no-repeat center
+
     button
         background: #3166AC
         border-radius: 4px

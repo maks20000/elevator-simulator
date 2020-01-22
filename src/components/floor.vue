@@ -34,7 +34,7 @@ export default {
         start: true,
         num: 0,
     },
-    computed: mapGetters(['elevatorCount','floorCount','pressed','elevator']),
+    computed: mapGetters(['elevatorCount','floorCount','pressed','elevator','mainLogic']),
 
     data() {
         return {
@@ -50,7 +50,7 @@ export default {
                 this.down = true;
                 this.$store.commit("pressed",{floor:this, dir:0, lift:null});
                 setTimeout(() => {
-                    this.$store.dispatch('setTargetForLift');
+                    this.mainLogic.setTargetForLift();
                 }, 1000);
                 
             }
@@ -60,7 +60,7 @@ export default {
                 this.up = true;
                 this.$store.commit("pressed",{floor:this, dir:1, lift:null});
                 setTimeout(() => {
-                    this.$store.dispatch('setTargetForLift');
+                    this.mainLogic.setTargetForLift();
                 }, 1000);
                 
             }
@@ -93,6 +93,17 @@ export default {
     .floor 
         display: flex
         justify-content: center
+        z-index: -1
+        
+        &:first-child
+            &:before 
+                content: ''
+                width: 100% 
+                height: 10px
+                background: #638CC2
+                position: absolute
+                z-index: 1
+        
 
     .left-block, .right-block 
         display: flex
@@ -191,10 +202,10 @@ export default {
         &::before
             content: ''
             position: absolute
-            border: 2px solid #638CC2
+            border-left: 2px solid #638CC2
             width: 21px
             height: 34px
-            right: -2px
-            bottom: -2px
+            right: -1px
+            bottom: 0px
 
 </style>>

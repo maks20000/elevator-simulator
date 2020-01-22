@@ -1,5 +1,9 @@
 <template>
   <div class="controll">
+      <span class="pin pin-1"></span>
+      <span class="pin pin-2"></span>
+      <span class="pin pin-3"></span>
+      <span class="pin pin-4"></span>
       <h4>– Лифт {{lift.id}} –</h4>
       <div class="weight">
           <div class="img">
@@ -103,6 +107,7 @@ export default {
         box-sizing: border-box
         border-radius: 5px
         padding-bottom: 14px
+        position: relative
         &:not(:last-child)
             margin-right: 20px
 
@@ -171,7 +176,6 @@ export default {
             justify-content: center
             font-weight: bold
             font-size: 14px
-            line-height: 16px
             cursor: pointer
             margin-bottom: 11px
             &:hover
@@ -190,5 +194,23 @@ export default {
             &:hover
                 border: 2px solid #EBF5F7
                 color: #EBF5F7
+        .pin 
+            width: 10px
+            height: 10px 
+            position: absolute
+            background: url('../assets/svg/pin.svg') no-repeat center
+
+        .pin-1 
+            left: 5px
+            top: 5px
+        .pin-2 
+            right: 7px
+            top: 5px
+        .pin-3 
+            left: 5px
+            bottom: 7px
+        .pin-4
+            right: 7px
+            bottom: 7px
 
 </style>
