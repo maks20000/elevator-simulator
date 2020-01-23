@@ -260,6 +260,7 @@ export default {
             this.isOpen=false;
             setTimeout(() => {
                 this.Move();
+                this.mainLogic.setTargetForLift();
             }, 1200);
         },
 

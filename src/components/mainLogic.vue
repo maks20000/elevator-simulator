@@ -117,7 +117,8 @@ export default {
         },
 
         findReverseLift (dir,numFloor) {
-            var lifts = this.getElevatorsAtDir(floor.dir,this.getPressedAtNum(numFloor,dir));
+            var floor = this.getPressedAtNum(numFloor,dir)
+            var lifts = this.getElevatorsAtDir(dir,floor);
             if (lifts.length>0) {
                 lifts = this.getElevatorsNoPeople(lifts)
                 if (lifts.length>0) {
