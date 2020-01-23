@@ -58,7 +58,6 @@ export default {
                     else this.lift.Move();
                 }
             } else this.noActive(floor);
-            console.log(this.lift)
         },
 
         checkWeight() {

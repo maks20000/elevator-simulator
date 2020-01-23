@@ -56,7 +56,6 @@ export default {
             }
 
             if (target==1 && !this.up) { 
-                console.log("вызываю лифт");
                 this.up = true;
                 this.$store.commit("pressed",{floor:this, dir:1, lift:null});
                 setTimeout(() => {
