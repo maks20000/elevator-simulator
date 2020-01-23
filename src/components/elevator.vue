@@ -190,14 +190,14 @@ export default {
             var inPeople=false;
             for (var i=0; i<this.pressed.length; i++) {
                 if (this.pressed[i].floor.num==Math.floor (this.floor)) {
-                    if (this.pressed[i].dir==1 && this.onPath==1) {
+                    if (this.pressed[i].dir==1 && this.onPath==1 || (this.pressed[i].dir==1 && this.to.length==0 && (this.pressed[i].lift==null || this.pressed[i].lift==this))) {
                         this.pressed[i].floor.up=false;
                         this.pressed.splice(i,1);
                         this.direction=1
                         inPeople=true;
                         break;
                     }
-                    else if ((this.pressed[i].dir==0 && this.onPath==0) || (this.to.length==0 && (this.pressed[i].lift==null || this.pressed[i].lift==this))) {
+                    else if ((this.pressed[i].dir==0 && this.onPath==0) || (this.pressed[i].dir==0 && this.to.length==0 && (this.pressed[i].lift==null || this.pressed[i].lift==this))) {
                         this.pressed[i].floor.down=false;
                         this.pressed.splice(i,1);
                         this.direction=0
@@ -239,11 +239,11 @@ export default {
                     setTimeout(() => {
                         this.mainLogic.setTargetForLift();
                     }, 2000);
+                    this.isOpen=false;
                 }
                 else if  (this.to.length==0 || this.controller.active.length==0) {
                     this.state=4;
                 }
-                this.isOpen=false;
 
 
                 if (Math.floor(this.floor)==this.$store.getters.floorCount) this.direction=0;
@@ -251,11 +251,16 @@ export default {
 
 
                 if (this.to.length>0 && this.state!=0 && this.controller.active.length>0) {
-                    setTimeout(() => {
-                        this.Move();
-                    }, 1200);
+                    this.closeAndMove();
                 }
             }, 1000);
+        },
+
+        closeAndMove () {
+            this.isOpen=false;
+            setTimeout(() => {
+                this.Move();
+            }, 1200);
         },
 
         Out (count) {

@@ -5,6 +5,7 @@ Vue.use(Vuex)
 
 export default new Vuex.Store ({
     state: {
+        showBuild:false,
         step:null,
         floorCount:9,
         elevatorCount:1,
@@ -14,39 +15,10 @@ export default new Vuex.Store ({
         mainLogicObject:null,
     },
 
-    actions: {
-        setTargetForLift (context) {
-           // context.getters.mainLogic.setTargetForLift();
-        },
-
-        changeTarget (context, {elevators, target}) {
-            var lift = context.getters.getElevatorMinDist(elevators,target.floor.num)
-            if (target.lift!=null && target.lift!=lift) {
-                if (target.lift.to[0]!=num && target.lift.state!=2) {
-                    if (!target.lift.controller.checkActive(num)) {
-                        target.lift.delTarget(num)
-                    }
-                } else lift=target.lift
-            }
-            target.lift=lift;
-            context.dispatch("setTarget",{elevator: target.lift, target:target});
-        },
-
-        setTarget (context, {elevator, target}) {
-            if (elevator!=null) {
-                elevator.onPath=target.dir;
-                if (!elevator.checkTarget(target.floor.num) && elevator.floor!=target.floor.num) {
-                    elevator.to.push(target.floor.num)
-                    if (elevator.state==0) elevator.Move();
-                }
-                else if (elevator.floor==target.floor.num && elevator.state!=1 && elevator.state!=2) {
-                    elevator.DoorOpen()
-                }
-            }
-        }
-    },
-
     mutations: {
+        show (state,value) {
+            state.showBuild=value
+        },
         setFloorCount(state,value) {
             state.floorCount=value;
         },
@@ -72,7 +44,9 @@ export default new Vuex.Store ({
     },
 
     getters: {
-
+        show (state) {
+            return state.showBuild;
+        },
         mainLogic (state) {
             return state.mainLogicObject;
         },
@@ -153,7 +127,6 @@ export default new Vuex.Store ({
             var dist=Math.abs(floor-result.floor)
             for (var i=0; i<elevators.length; i++) {
                 var d = Math.abs(floor-elevators[i].floor)
-                if ((elevators[i].to[0]==floor && elevators[i].state==1) || elevators[i].state==2) d-=2;
                 if (d < dist) {
                     result=elevators[i];
                     dist=d;
@@ -210,6 +183,12 @@ export default new Vuex.Store ({
         getElevatorsNoPeople: (state) => (elevators) => {
             return (elevators.filter((lift)=> {
                 return lift.people==0
+            }))
+        },
+
+        getElevatorsNoTargets: (state) => (elevators) => {
+            return (elevators.filter((lift)=> {
+                return lift.to.length==0
             }))
         },
 

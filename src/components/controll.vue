@@ -5,12 +5,14 @@
       <span class="pin pin-3"></span>
       <span class="pin pin-4"></span>
       <h4>– Лифт {{lift.id}} –</h4>
-      <div class="weight">
-          <div class="img">
-              <img :src="'src/assets/svg/icon-lift-weight-'+getImageNum()+'.svg'" alt="weight-indicator">
-          </div>
-          <span v-if="checkWeight()" class="error">перевес</span>
-          <div class="info">{{lift.people}} человек весом {{lift.weightSum}} кг</div>
+      <div class="weight-block">
+        <div class="weight">
+            <div class="img">
+                <img :src="'src/assets/svg/icon-lift-weight-'+getImageNum()+'.svg'" alt="weight-indicator">
+            </div>
+            <span v-if="checkWeight()" class="error">перевес</span>
+            <div class="info">{{lift.people}} человек весом {{lift.weightSum}} кг</div>
+        </div>
       </div>
       <div class="button-panel">
           <div v-for="i in 3" :key="i" class="column">
@@ -55,7 +57,9 @@ export default {
                         this.lift.delTarget(floor);
                         this.lift.DoorOpen();
                     }
-                    else this.lift.Move();
+                    else {
+                        this.lift.closeAndMove();
+                    }
                 }
             } else this.noActive(floor);
         },
@@ -120,17 +124,19 @@ export default {
             color: #638CC2
             margin-top: 15px
             margin-bottom: 10px
-
+        .weight-block
+            display: flex
+            justify-content: center
         .weight 
+            font-family: Roboto
             background: #0E3058
             box-shadow: inset 0px 1px 0px rgba(5, 28, 54, 0.2)
             border-radius: 3px
-            width: 120px
+            min-width: 120px
             height: 25px
-            margin: 0 auto
-            display: flex
+            display: inline-flex
             align-items: center
-            padding: 4px
+            padding: 4px 0px 4px 4px
             box-sizing: border-box
             position: relative
             .img

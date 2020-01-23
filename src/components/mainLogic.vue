@@ -21,7 +21,7 @@ export default {
 
     computed: mapGetters(['getPressedAtNum','elevator','pressed','floorCount','getFloorDir','getMaxFloor','getMinFloor','getElevatorMinDist',
     'getElevatorsTop','getElevatorsBottom','getElevatorsTargetPath','getElevatorsWeight',
-    'getElevatorsDirection','getElevatorsMove', 'getElevatorsWithState', 'getElevatorsAtDir', 'getMinFloorAtDir', 'getElevatorsNoPeople','getNumFloor']),
+    'getElevatorsDirection','getElevatorsMove', 'getElevatorsWithState', 'getElevatorsAtDir', 'getMinFloorAtDir', 'getElevatorsNoPeople','getNumFloor','getElevatorsNoTargets']),
 
     methods: {
         setTargetForLift () {
@@ -103,10 +103,13 @@ export default {
                 var bottomLift = this.getElevatorMinDist(lifts,numFloor);
                 var topLift = this.getElevatorsAtDir(dir,this.getPressedAtNum(numFloor,dir));
                 if (topLift.length>0)  {
-                    topLift = this.getElevatorMinDist(topLift,numFloor);
-                    if (Math.abs(numFloor-bottomLift.floor)>4 && Math.abs(numFloor-bottomLift.floor)>Math.abs(numFloor-topLift.floor)) {
-                        return topLift;
-                    } 
+                    topLift = this.getElevatorsNoTargets(topLift);
+                    if (topLift.length>0) {
+                        topLift = this.getElevatorMinDist(topLift,numFloor);
+                        if (Math.abs(numFloor-bottomLift.floor)>4 && Math.abs(numFloor-bottomLift.floor)>Math.abs(numFloor-topLift.floor) && topLift.people==0) {
+                            return topLift;
+                        } 
+                    }
                 }
                 return bottomLift;
             }

@@ -2,14 +2,16 @@
   <div id="app">
     <div class="container">
       <configPanel></configPanel>
-      <div class="build">
+    </div>
+    <div class="container">
+      <div v-if="show" class="build">
           <div class="roof"></div>
           <div class="upBorder"></div>
           <floor v-for="i in floorCount-1" :key=i+1 :num="floorCount-i+1"></floor>
           <floor :num="1" :start="true"></floor>
       </div>
     </div>
-    <div class="controll-block">
+    <div v-if="show" class="controll-block">
       <controll v-for="(lift,index) in elevator" :key="index" :lift="lift"></controll>
     </div>
     <main-logic></main-logic>
@@ -35,7 +37,7 @@ export default {
   mounted() {
       
   },
-  computed: mapGetters(['floorCount', 'elevator']),
+  computed: mapGetters(['floorCount', 'elevator', 'show']),
 }
 </script>
 
@@ -47,11 +49,12 @@ export default {
     font-weight: normal
 
   .container 
-    max-width: 960px
+    max-width: 965px
     margin: 0 auto
     display: flex
     flex-direction: column
     justify-content: center
+    
   .build
     position: relative
     display: inline-block

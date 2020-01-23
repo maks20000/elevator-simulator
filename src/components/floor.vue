@@ -34,7 +34,7 @@ export default {
         start: true,
         num: 0,
     },
-    computed: mapGetters(['elevatorCount','floorCount','pressed','elevator','mainLogic']),
+    computed: mapGetters(['elevatorCount','floorCount','pressed','elevator','mainLogic','show']),
 
     data() {
         return {

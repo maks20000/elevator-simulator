@@ -57,6 +57,7 @@ export default {
             this.$store.commit("setFloorCount",this.floors);
             this.$store.commit("setElevatorCount",this.elevators);
             this.$store.commit("tonnageNum",this.tonn);
+            this.$store.commit("show",true);
         }
     }
 }
